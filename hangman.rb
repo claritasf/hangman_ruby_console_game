@@ -1,3 +1,5 @@
+require 'json'
+
 
 class Hangman
   attr_accessor :player, :board
@@ -23,14 +25,35 @@ class Hangman
     end    
   end
 
+  def game_choice
+    if @@guesses == 9
+      typed_choice = 1
+    else
+      puts "\n If you want to continue playing please type number 1, if you want to save this game, type number 2:"
+      typed_choice = gets.chomp.to_i
+  #      until game_choice == 1 || game_choice == 2
+  #        puts "\n\n Invalid answer! \n\n Please you have to type: \"1 to continue playing \" or \"2 to save this game\""
+  #        game_choice = gets.chomp.to_i
+  #      end
+    end
+  end
+
   def player_turn
-    puts "Please #{@player.name} make your guess by choosing a letter:"
-    chosen_letter = gets.chomp.downcase
-    #until valid_input?(guessed_array)
-    #  puts "\nAt least one of your inputs is not valid, please type them again, separated by a single space, remeber you must type 4 valid colors between: \"red, yellow, green, blue, orange, purple\" \n "
-    #  guessed_array = gets.chomp.downcase.split
-    #end
-    validate_guess(chosen_letter)    
+    typed_choice = game_choice 
+    print "\n\nthis is the choice player type:\n\n\n"
+    print typed_choice
+    print "\n\n"
+    if typed_choice == 1
+      puts "Please #{@player.name} make your guess by choosing a letter:"
+      chosen_letter = gets.chomp.downcase
+      #until valid_input?(guessed_array)
+      #  puts "\nAt least one of your inputs is not valid, please type them again, separated by a single space, remeber you must type 4 valid colors between: \"red, yellow, green, blue, orange, purple\" \n "
+      #  guessed_array = gets.chomp.downcase.split
+      #end
+      validate_guess(chosen_letter)    
+    else
+      save_game
+    end
     @@guesses -= 1 
   end
 
@@ -87,6 +110,35 @@ class Hangman
     puts "__________________________________________________________________________________________________________________"
 
   end
+
+  def save_game
+      Dir.mkdir('games_saved') unless Dir.exist? 'games_saved'
+      
+      print "\n Please name the game you want to save: "
+      game_name = gets.chomp
+      Dir.chdir("games_saved")
+      save_file = File.open(game_name,'w+')
+      json_string = to_json
+
+      save_file.write(json_string)
+      save_file.close
+      puts "SAVED GAME SUCCESSFULY!"
+  end
+
+  def to_json
+    JSON.dump ({
+      :guesses => @@guesses,
+      :misses_array => @@misses_array,
+      :secret_word => board.secret_word,
+      :word_to_guess => board.word_to_guess,
+      :guess_array => board.guess_array
+      })
+
+  end
+
+  def from_json
+  end
+
 
   class Player
     attr_accessor :name
