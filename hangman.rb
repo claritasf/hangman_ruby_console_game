@@ -14,11 +14,16 @@ class Hangman
     @guess_array = Array.new(@word_to_guess.length , " _ ")
     
     puts "WELCOME TO HANGMAN!!! \n\n\n You'll have to guess the word before you run out of plays\n\n"
-    #puts "Please write your name"
-    #player_name = gets.chomp 
-      player_name = "clara"   
-      @player = Player.new(player_name)
+    puts "You want to start a new game or continue playing a saved game?, type \"new\"  or \"load\""
+    @player_choice = gets.chomp.downcase
+    if @player_choice == "new"
+      puts "Please write your name"
+      player_name = gets.chomp  
+      @player = player_name
       start
+    else
+      load_game
+    end
   end
 
   def read_words_file
@@ -45,10 +50,10 @@ class Hangman
   end
 
   def game_choice
-    if @@guesses == 9
+    if @@guesses == 9 || @player_choice == "load"
       typed_choice = 1
     else
-      puts "\n If you want to continue playing please type number 1, if you want to save this game, type number 2:"
+      puts "\n\n If you want to continue playing please type number 1, if you want to save this game, type number 2:"
       typed_choice = gets.chomp.to_i
   #      until game_choice == 1 || game_choice == 2
   #        puts "\n\n Invalid answer! \n\n Please you have to type: \"1 to continue playing \" or \"2 to save this game\""
@@ -59,11 +64,8 @@ class Hangman
 
   def player_turn
     typed_choice = game_choice 
-    print "\n\nthis is the choice player type:\n\n\n"
-    print typed_choice
-    print "\n\n"
     if typed_choice == 1
-      puts "Please #{@player.name} make your guess by choosing a letter:"
+      puts "Please #{@player} make your guess by choosing a letter:"
       chosen_letter = gets.chomp.downcase
       #until valid_input?(guessed_array)
       #  puts "\nAt least one of your inputs is not valid, please type them again, separated by a single space, remeber you must type 4 valid colors between: \"red, yellow, green, blue, orange, purple\" \n "
@@ -87,7 +89,7 @@ class Hangman
   def game_over?
 
     if victory?
-      puts "#{@player.name} WINS!!"
+      puts "#{@player} WINS!!"
       return true      
     elsif no_guesses_left?
       puts "GAME OVER, NO GUESSES LEFT :( 
@@ -140,11 +142,14 @@ class Hangman
       json_string = to_json
       save_file.write(json_string)
       save_file.close
+      Dir.chdir("..")
       puts "SAVED GAME SUCCESSFULY!"
+      exit
   end
 
   def to_json
     JSON.dump ({
+      :name => @player,
       :guesses => @@guesses,
       :misses_array => @@misses_array,
       :secret_word => @secret_word,
@@ -153,14 +158,36 @@ class Hangman
       })
   end
 
-  class Player
-    attr_accessor :name
-    
-    def initialize(name)
-      @name = name
-    end
+  def from_json(string)
+    data = JSON.parse(string)
+      @player = data['name']
+      @@guesses = data['guesses']
+      @@misses_array = data['misses_array']
+      @secret_word = data['secret_word']
+      @word_to_guess = data['word_to_guess']
+      @guess_array = data['guess_array']
   end
+
+  def load_game
+    puts "\n These are the games saved\n"
+    Dir.foreach('games_saved') {|file| puts "File: #{file}" }
+    print "\n\n\n"
+    puts "Please choose a file from the games saved to resume game:"
+    file_chosen = gets.chomp.downcase
+    puts "\n\n you have chosen this file: #{file_chosen}\n\n"
+
+    Dir.chdir("games_saved")
+    load_file = File.read(file_chosen)
+    from_json(load_file)
+    Dir.chdir("..")
+    display_board
+    puts "GAME LOADED SUCCESSFULY!"
+    start
+  end
+
 end
+
+
 
 my_game = Hangman.new
 
