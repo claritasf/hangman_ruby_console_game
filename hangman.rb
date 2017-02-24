@@ -13,17 +13,29 @@ class Hangman
     @word_to_guess = @secret_word.split("")
     @guess_array = Array.new(@word_to_guess.length , " _ ")
     
-    puts "WELCOME TO HANGMAN!!! \n\n\n You'll have to guess the word before you run out of plays\n\n"
-    puts "You want to start a new game or continue playing a saved game?, type \"new\"  or \"load\""
-    @player_choice = gets.chomp.downcase
-    if @player_choice == "new"
-      puts "Please write your name"
-      player_name = gets.chomp  
-      @player = player_name
-      start
-    else
-      load_game
+    puts "WELCOME TO HANGMAN!!! \n\n\n"
+
+    loop do
+      puts %q{Please select an option:
+      1. Start a new game
+      2. Load an existing game
+      3. Quit}
+      case gets.chomp
+        when '1'
+        new_game
+        when '2'
+        load_game
+        when '3'
+        quit
+      end
     end
+  end
+
+  def new_game
+    puts "Please write your name"
+    player_name = gets.chomp  
+    @player = player_name
+    start
   end
 
   def read_words_file
@@ -50,15 +62,12 @@ class Hangman
   end
 
   def game_choice
-    if @@guesses == 9 || @player_choice == "load"
+    if @@guesses == 9 
       typed_choice = 1
     else
       puts "\n\n If you want to continue playing please type number 1, if you want to save this game, type number 2:"
       typed_choice = gets.chomp.to_i
-  #      until game_choice == 1 || game_choice == 2
-  #        puts "\n\n Invalid answer! \n\n Please you have to type: \"1 to continue playing \" or \"2 to save this game\""
-  #        game_choice = gets.chomp.to_i
-  #      end
+
     end
   end
 
@@ -67,10 +76,7 @@ class Hangman
     if typed_choice == 1
       puts "Please #{@player} make your guess by choosing a letter:"
       chosen_letter = gets.chomp.downcase
-      #until valid_input?(guessed_array)
-      #  puts "\nAt least one of your inputs is not valid, please type them again, separated by a single space, remeber you must type 4 valid colors between: \"red, yellow, green, blue, orange, purple\" \n "
-      #  guessed_array = gets.chomp.downcase.split
-      #end
+
       validate_guess(chosen_letter)    
     else
       save_game
@@ -89,11 +95,11 @@ class Hangman
   def game_over?
 
     if victory?
-      puts "#{@player} WINS!!"
+      puts "\n\n#{@player} WINS!!\n\n"
       return true      
     elsif no_guesses_left?
-      puts "GAME OVER, NO GUESSES LEFT :( 
-        \n the secret word was: #{@secret_word}"
+      puts "\n\nGAME OVER, NO GUESSES LEFT :( 
+        \n the secret word was: #{@secret_word}\n\n"
       return true
     else
       return false
@@ -185,9 +191,12 @@ class Hangman
     start
   end
 
+  def quit
+    puts "Bye!"
+    exit
+  end
+
 end
-
-
 
 my_game = Hangman.new
 
