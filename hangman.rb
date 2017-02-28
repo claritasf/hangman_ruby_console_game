@@ -67,8 +67,12 @@ class Hangman
     else
       puts "\n\n If you want to continue playing please type number 1, if you want to save this game, type number 2:"
       typed_choice = gets.chomp.to_i
-
+      until typed_choice == 1 || typed_choice == 2
+        puts "\n\n Invalid answer! \n\n Please you have to type: \"1 to continue playing \" or \"2 to save this game\""
+        typed_choice = gets.chomp.to_i
+      end
     end
+    return typed_choice
   end
 
   def player_turn
@@ -76,7 +80,10 @@ class Hangman
     if typed_choice == 1
       puts "Please #{@player} make your guess by choosing a letter:"
       chosen_letter = gets.chomp.downcase
-
+      until valid_input?(chosen_letter)
+        puts "\nInvalid input! remember you have to type a letter from \"a to z\" \n "
+        chosen_letter = gets.chomp.downcase
+      end
       validate_guess(chosen_letter)    
     else
       save_game
@@ -91,6 +98,13 @@ class Hangman
     @@misses_array << letter
   end
 
+  def valid_input?(letter)
+    if letter.match(/[a-z]/)
+      return true
+    else
+      return false
+    end
+  end
 
   def game_over?
 
@@ -182,13 +196,22 @@ class Hangman
     file_chosen = gets.chomp.downcase
     puts "\n\n you have chosen this file: #{file_chosen}\n\n"
 
+    if valid_file?(file_chosen)
+      load_file = File.read(file_chosen)
+      from_json(load_file)
+      Dir.chdir("..")
+      display_board
+      puts "GAME LOADED SUCCESSFULY!"
+      start
+    else
+      puts "File doesn't exists! try again"
+      Dir.chdir("..")
+    end
+  end
+
+  def valid_file?(filename)
     Dir.chdir("games_saved")
-    load_file = File.read(file_chosen)
-    from_json(load_file)
-    Dir.chdir("..")
-    display_board
-    puts "GAME LOADED SUCCESSFULY!"
-    start
+    File.exists?(filename)
   end
 
   def quit
